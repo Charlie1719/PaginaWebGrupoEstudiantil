@@ -35,7 +35,7 @@
 			<!-- Badge Superior -->
 			<div class="inline-flex items-center gap-2 rounded-full border border-purple-300 bg-purple-50/80 px-4 py-1.5 text-xs font-semibold tracking-wider text-purple-700 uppercase">
 				<span class="h-2 w-2 rounded-full bg-purple-600"></span>
-				Competidores Internacionales 2026
+				Competidores de Robótica 2026
 			</div>
 
 			<!-- Título Principal -->
