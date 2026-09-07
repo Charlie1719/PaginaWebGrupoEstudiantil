@@ -1,5 +1,5 @@
 <script lang="ts">
-	import droneops from '$lib/assets/logo.png';
+	import droneops from '$lib/assets/logodroneops.png';
 	import Navbar from '$lib/Navbar.svelte';
 	import Footer from '$lib/Footer.svelte';
 	import '../app.css';
