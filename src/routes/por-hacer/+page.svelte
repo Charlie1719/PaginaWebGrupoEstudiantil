@@ -7,6 +7,7 @@
 		titulo: string;
 		comentarios: string | null;
 		estado: string;
+		categoria: string;
 		asignado_a: string[] | null;
 		creado_en: string;
 	}
@@ -42,14 +43,36 @@
 	let estadoMenuAbierto = $state(false);
 	let asignadosMenuAbierto = $state(false);
 
+	// Reactivo para la seccion de categorias
+	// Edición en el modal de detalle
+	let editandoCategoria = $state('General');
+
+	// Modal de nueva tarea
+	let nuevaTareaCategoria = $state('General');
+
+	// Popover para el selector de categoría (mismo patrón que estado/asignados)
+	let categoriaMenuAbierto = $state(false);
+
 	const columnas = [
 		{ id: 'not_started', label: 'NOT STARTED', key: 'not-started' },
 		{ id: 'in_progress', label: 'IN PROGRESS', key: 'in-progress' },
 		{ id: 'done', label: 'DONE', key: 'done' }
 	];
 
+	const categorias = [
+		{ id: 'General', label: 'GENERAL', key: 'general' },
+		{ id: 'Finanzas', label: 'FINANZAS', key: 'finanzas' },
+		{ id: 'Imagen', label: 'IMAGEN', key: 'imagen' },
+		{ id: 'Responsabilidad social', label: 'RESP. SOCIAL', key: 'social' },
+		{ id: 'Logistica', label: 'LOGÍSTICA', key: 'logistica' }
+	];
+
 	function columnaDe(estadoId: string) {
 		return columnas.find(c => c.id === estadoId) ?? columnas[0];
+	}
+
+	function categoriaDe(categoriaId: string) {
+		return categorias.find(c => c.id === categoriaId) ?? categorias[0];
 	}
 
 	// Acción de Svelte para cerrar un popover al hacer clic fuera de él.
@@ -134,14 +157,17 @@
 		editandoTitulo = tarea.titulo;
 		editandoComentarios = tarea.comentarios || '';
 		editandoEstado = tarea.estado;
+		editandoCategoria = tarea.categoria;
 		editandoAsignados = [...(tarea.asignado_a || [])];
 		estadoMenuAbierto = false;
+		categoriaMenuAbierto = false;
 		asignadosMenuAbierto = false;
 	}
 
 	function cerrarDetalle() {
 		tareaSeleccionada = null;
 		estadoMenuAbierto = false;
+		categoriaMenuAbierto = false;
 		asignadosMenuAbierto = false;
 	}
 
@@ -156,17 +182,20 @@
 
 	function abrirModalNueva(estadoId: string) {
 		nuevaTareaEstado = estadoId;
+		nuevaTareaCategoria = 'General'; 
 		nuevaTareaTitulo = '';
 		nuevaTareaComentarios = '';
 		nuevaTareaAsignados = [];
 		mostrandoNuevaTarea = true;
 		estadoMenuAbierto = false;
+		categoriaMenuAbierto = false;
 		asignadosMenuAbierto = false;
 	}
 
 	function cerrarModalNueva() {
 		mostrandoNuevaTarea = false;
 		estadoMenuAbierto = false;
+		categoriaMenuAbierto = false;
 		asignadosMenuAbierto = false;
 	}
 
@@ -179,6 +208,7 @@
 			.insert([{
 				titulo: nuevaTareaTitulo.trim(),
 				estado: nuevaTareaEstado,
+				categoria: nuevaTareaCategoria,  
 				comentarios: nuevaTareaComentarios.trim() || null,
 				asignado_a: nuevaTareaAsignados
 			}])
@@ -223,6 +253,7 @@
 				titulo: editandoTitulo.trim(),
 				comentarios: editandoComentarios.trim() || null,
 				estado: editandoEstado,
+				categoria: editandoCategoria,  
 				asignado_a: editandoAsignados
 			})
 			.eq('id', tareaSeleccionada.id);
@@ -238,6 +269,7 @@
 							titulo: editandoTitulo.trim(),
 							comentarios: editandoComentarios.trim() || null,
 							estado: editandoEstado,
+							categoria: editandoCategoria,
 							asignado_a: editandoAsignados
 						}
 					: t
@@ -313,6 +345,46 @@
 								}}
 							>
 								<span class="dot dot-{opcion.key}"></span>
+								<span class="popover-item-text">{opcion.label}</span>
+								{#if opcion.id === valorActual}
+									<span class="popover-check">✓</span>
+								{/if}
+							</button>
+						{/each}
+					</div>
+				{/if}
+			</div>
+		</div>
+	</div>
+{/snippet}
+
+{#snippet categoriaPropiedad(valorActual: string, alCambiar: (nuevo: string) => void)}
+	{@const cat = categoriaDe(valorActual)}
+	<div class="prop-row">
+		<span class="prop-label">Categoría</span>
+		<div class="prop-value">
+			<div class="popover-wrapper" use:clickOutside={() => (categoriaMenuAbierto = false)}>
+				<button
+					type="button"
+					class="status-pill cat-pill-{cat.key}"
+					onclick={() => (categoriaMenuAbierto = !categoriaMenuAbierto)}
+				>
+					<span class="dot cat-dot-{cat.key}"></span>
+					{cat.label}
+				</button>
+
+				{#if categoriaMenuAbierto}
+					<div class="popover-menu">
+						{#each categorias as opcion}
+							<button
+								type="button"
+								class="popover-item"
+								onclick={() => {
+									alCambiar(opcion.id);
+									categoriaMenuAbierto = false;
+								}}
+							>
+								<span class="dot cat-dot-{opcion.key}"></span>
 								<span class="popover-item-text">{opcion.label}</span>
 								{#if opcion.id === valorActual}
 									<span class="popover-check">✓</span>
@@ -449,19 +521,18 @@
 									onclick={() => abrirDetalle(tarea)}
 									onkeydown={(e) => (e.key === 'Enter' || e.key === ' ') && abrirDetalle(tarea)}
 									class="task-card task-card-{col.key}"
-								>
+								>		
 									<div class="card-header-actions">
-										<h3 class="task-title">{tarea.titulo}</h3>
-										<button
-											type="button"
-											class="btn-delete"
-											onclick={(e) => eliminarTarea(tarea.id, e)}
-											title="Eliminar tarea"
-										>
+										<div>
+											<h3 class="task-title">{tarea.titulo}</h3>
+											<span class="cat-tag cat-tag-{categoriaDe(tarea.categoria).key}">
+												{categoriaDe(tarea.categoria).label}
+											</span>
+										</div>
+										<button type="button" class="btn-delete" onclick={(e) => eliminarTarea(tarea.id, e)} title="Eliminar tarea">
 											✕
 										</button>
 									</div>
-
 									<div class="card-footer">
 										<div class="avatars">
 											{#if tarea.asignado_a && tarea.asignado_a.length > 0}
@@ -534,7 +605,7 @@
 					</div>
 
 					{@render estadoPropiedad(editandoEstado, (v) => (editandoEstado = v))}
-
+					{@render categoriaPropiedad(editandoCategoria, (v) => (editandoCategoria = v))}
 					{@render asignadosPropiedad(editandoAsignados, (v) => (editandoAsignados = v))}
 
 					<div>
@@ -596,7 +667,7 @@
 					</div>
 
 					{@render estadoPropiedad(nuevaTareaEstado, (v) => (nuevaTareaEstado = v))}
-
+					{@render categoriaPropiedad(nuevaTareaCategoria, (v) => (nuevaTareaCategoria = v))}
 					{@render asignadosPropiedad(nuevaTareaAsignados, (v) => (nuevaTareaAsignados = v))}
 
 					<div>
@@ -1227,4 +1298,33 @@
 		opacity: 0.5;
 		cursor: not-allowed;
 	}
+
+	.cat-pill-general      { background-color: #2a2e38; color: #94a3b8; }
+	.cat-pill-finanzas     { background-color: #173822; color: #81c784; }
+	.cat-pill-imagen       { background-color: #3a1d38; color: #d891e0; }
+	.cat-pill-social       { background-color: #3d2b13; color: #f0a84e; }
+	.cat-pill-logistica    { background-color: #16293b; color: #64b5f6; }
+
+	.cat-dot-general    { background-color: #94a3b8; }
+	.cat-dot-finanzas   { background-color: #4caf50; }
+	.cat-dot-imagen     { background-color: #d891e0; }
+	.cat-dot-social     { background-color: #f0a84e; }
+	.cat-dot-logistica  { background-color: #64b5f6; }
+
+	.cat-tag {
+		display: inline-block;
+		margin-top: 0.25rem;
+		font-size: 0.6rem;
+		font-weight: 700;
+		letter-spacing: 0.05em;
+		padding: 0.15rem 0.5rem;
+		border-radius: 9999px;
+		font-family: monospace;
+	}
+
+	.cat-tag-general    { background-color: #2a2e38; color: #94a3b8; }
+	.cat-tag-finanzas   { background-color: #173822; color: #81c784; }
+	.cat-tag-imagen     { background-color: #3a1d38; color: #d891e0; }
+	.cat-tag-social     { background-color: #3d2b13; color: #f0a84e; }
+	.cat-tag-logistica  { background-color: #16293b; color: #64b5f6; }
 </style>
