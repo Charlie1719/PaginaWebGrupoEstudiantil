@@ -1,6 +1,6 @@
 # DroneOps Web
 
-DroneOps Web es la plataforma digital oficial orientada a la gestión operativa, reclutamiento y difusión pública del equipo de robótica aérea del Tecnológico de Monterrey, Campus Guadalajara. La solución permite dar a conocer el proyecto a la comunidad externa, canalizar el registro de nuevos aspirantes, conectar las herramientas de trabajo del equipo y ofrecer un espacio privado para la gestión de tareas de los miembros activos.
+DroneOps Web es la plataforma digital oficial orientada a la gestión operativa, reclutamiento y difusión pública del equipo de robótica del Tecnológico de Monterrey, Campus Guadalajara. La solución permite dar a conocer el proyecto a la comunidad externa, canalizar el registro de nuevos aspirantes, conectar las herramientas de trabajo del equipo y ofrecer un espacio privado para la gestión de tareas de los miembros activos.
 
 La solución está estructurada sobre un entorno de renderizado en servidor (SSR) con SvelteKit 2 y Svelte 5, un backend en la nube potenciado por Supabase (autenticación y base de datos) y estilos construidos con Tailwind CSS v4. El despliegue está optimizado para la infraestructura de Vercel mediante su adaptador oficial.
 
