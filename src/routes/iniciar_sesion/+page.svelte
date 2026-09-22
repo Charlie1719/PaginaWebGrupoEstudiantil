@@ -1,15 +1,15 @@
 <script lang="ts">
-//Importacion de imagenes y recursos de svelte para postear
+//Importacion de imagenes y recursos de svelte (forms) para subir datos y hacer consultas
     import { enhance } from '$app/forms';
     import logoDO from '$lib/assets/logoDO.png';
-
+//Definimos el estado del ojito y su estado a tiempo real
     let mostrarPassword = $state(false);
-
+//Nos sirve para guardar los datos que va a ingresar el usuario
     type LoginForm = {
         message?: string;
         email?: string;
     };
-
+// Preparamos el terreno para cuando solicite el servidor
     let { form }: { form?: LoginForm } = $props();
 </script>
 
@@ -30,7 +30,8 @@
             </div>
         {/if}
 
-        <form method="POST" use:enhance>
+        <!-- Metodo post para iniciar sesion de manera segura -->
+        <form method="POST" use:enhance> <!-- El enhance evita la recarga de pagina y envia los datos del servidor en segundo plano-->
             <div class="input-group">
                 <label for="email">Correo electrónico:</label>
                 <input
@@ -61,13 +62,13 @@
                         aria-pressed={mostrarPassword}
                     >
                         {#if mostrarPassword}
-                            <!-- ojo tachado: la contraseña está visible -->
+                            <!-- ojo tachado: la contraseña esta visible -->
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                                 <path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a20.4 20.4 0 0 1 5.06-6.06M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 8 11 8a20.5 20.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
                                 <line x1="1" y1="1" x2="23" y2="23" />
                             </svg>
                         {:else}
-                            <!-- ojo abierto: la contraseña está oculta -->
+                            <!-- ojo abierto: la contraseña esta oculta -->
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z" />
                                 <circle cx="12" cy="12" r="3" />

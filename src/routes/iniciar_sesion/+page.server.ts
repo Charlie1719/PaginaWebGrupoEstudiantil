@@ -1,12 +1,13 @@
 // src/routes/iniciar_sesion/+page.server.ts
 import { fail, redirect, type Actions } from '@sveltejs/kit';
-
+// 
 export const actions: Actions = {
 	default: async ({ request, locals }) => {
+		// Recibimos los datos del hooks.server
 		if (!locals.supabase) {
 			return fail(500, {
 				email: '',
-				message: 'El cliente de Supabase no fue inicializado en hooks.server.ts'
+				message: 'ERROR: El cliente de Supabase no fue inicializado en hooks.server.ts'
 			});
 		}
 
