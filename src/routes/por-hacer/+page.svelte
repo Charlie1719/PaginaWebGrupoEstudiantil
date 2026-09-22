@@ -2,6 +2,9 @@
 	import { onMount } from 'svelte';
 	import { supabase } from '$lib/supabaseClient';
 
+	// 1. Recibimos las props del servidor (para saber qué usuario está logueado)
+	let { data } = $props();
+
 	interface Tarea {
 		id: number;
 		titulo: string;
@@ -15,12 +18,26 @@
 	interface Admin {
 		email: string;
 		user: string;
+		ve_todo: boolean;
+		area: string;
 	}
 
 	let tareas = $state<Tarea[]>([]);
 	let admins = $state<Admin[]>([]);
 	let cargando = $state(true);
 	let tareaSeleccionada = $state<Tarea | null>(null);
+
+	// Estado reactivo para el admin actual y el estado de carga del ojito
+	let adminActual = $state<Admin | null>(null);
+	let guardandoVeTodo = $state(false);
+
+	// $effect para identificar al admin logueado una vez cargada la lista de admins
+	$effect(() => {
+		const emailUsuario = data.user?.email;
+		if (emailUsuario && admins.length > 0) {
+			adminActual = admins.find(a => a.email === emailUsuario) || null;
+		}
+	});
 
 	// Estado reactivo para la edición en el modal de detalle
 	let editandoTitulo = $state('');
@@ -37,20 +54,13 @@
 	let nuevaTareaAsignados = $state<string[]>([]);
 	let guardandoNueva = $state(false);
 
-	// Popovers estilo Notion para los campos Estado y Asignados.
-	// Se comparten entre el modal de detalle y el de nueva tarea porque
-	// nunca están abiertos los dos modales a la vez.
+	// Popovers estilo Notion
 	let estadoMenuAbierto = $state(false);
 	let asignadosMenuAbierto = $state(false);
 
-	// Reactivo para la seccion de categorias
-	// Edición en el modal de detalle
+	// Reactivo para la sección de categorías
 	let editandoCategoria = $state('General');
-
-	// Modal de nueva tarea
 	let nuevaTareaCategoria = $state('General');
-
-	// Popover para el selector de categoría (mismo patrón que estado/asignados)
 	let categoriaMenuAbierto = $state(false);
 
 	const columnas = [
@@ -75,11 +85,6 @@
 		return categorias.find(c => c.id === categoriaId) ?? categorias[0];
 	}
 
-	// Acción de Svelte para cerrar un popover al hacer clic fuera de él.
-	// Se registra en fase de captura para que el clic que ABRE el menú
-	// no lo cierre de inmediato en el mismo evento (el target del clic
-	// que abre está DENTRO del nodo, así que node.contains(...) es true
-	// y no se dispara el callback).
 	function clickOutside(node: HTMLElement, callback: () => void) {
 		function handleClick(event: MouseEvent) {
 			if (node && !node.contains(event.target as Node)) {
@@ -94,13 +99,47 @@
 		};
 	}
 
+	// Función para alternar el ojito de 've_todo' en Supabase
+	async function toggleVeTodo() {
+		if (!adminActual) return;
+		guardandoVeTodo = true;
+
+		const nuevoValor = !adminActual.ve_todo;
+
+		// Actualizamos en la tabla admins de Supabase
+		const { error } = await supabase
+			.from('admins')
+			.update({ ve_todo: nuevoValor })
+			.eq('email', adminActual.email);
+
+		if (error) {
+			console.error('Error al cambiar modo de vista:', error);
+			alert('No se pudo cambiar la vista');
+		} else {
+			// Actualizamos el estado local
+			adminActual.ve_todo = nuevoValor;
+
+			// Re-consultamos las tareas para que PostgreSQL aplique la policy RLS actualizada
+			const { data: nuevasTareas, error: errorTareas } = await supabase
+				.from('tareas')
+				.select('*')
+				.order('id', { ascending: true });
+
+			if (!errorTareas && nuevasTareas) {
+				tareas = nuevasTareas;
+			}
+		}
+		guardandoVeTodo = false;
+	}
+
 	onMount(() => {
 		let canal: ReturnType<typeof supabase.channel> | null = null;
 
 		(async () => {
+			// Incluimos area y ve_todo en la consulta de admins
 			const [tareasRes, adminsRes] = await Promise.all([
 				supabase.from('tareas').select('*').order('id', { ascending: true }),
-				supabase.from('admins').select('email, user').order('user', { ascending: true })
+				supabase.from('admins').select('email, user, area, ve_todo').order('user', { ascending: true })
 			]);
 
 			if (tareasRes.error) {
@@ -117,8 +156,6 @@
 
 			cargando = false;
 
-			// Suscripción en tiempo real: si otro admin agrega, mueve o borra
-			// una tarea desde su propia sesión, este tablero se actualiza solo.
 			canal = supabase
 				.channel('tareas-realtime')
 				.on(
@@ -203,7 +240,7 @@
 		if (!nuevaTareaTitulo.trim()) return;
 		guardandoNueva = true;
 
-		const { data, error } = await supabase
+		const { error } = await supabase
 			.from('tareas')
 			.insert([{
 				titulo: nuevaTareaTitulo.trim(),
@@ -276,7 +313,6 @@
 		guardandoModal = false;
 	}
 
-	// Lógica para Drag & Drop NATIVO
 	function handleDragStart(e: DragEvent, id: number) {
 		if (e.dataTransfer) {
 			e.dataTransfer.setData('text/plain', id.toString());
@@ -471,7 +507,37 @@
 
 <div class="page-container">
 	<header class="header">
-		<h1 class="header-title">TAREAS</h1>
+		<div class="header-left">
+			<h1 class="header-title">TAREAS</h1>
+
+			<!-- Botón interactivo del ojito para alternar la vista -->
+			{#if adminActual}
+				<button 
+					type="button" 
+					class="btn-toggle-eye" 
+					class:active={adminActual.ve_todo}
+					onclick={toggleVeTodo}
+					disabled={guardandoVeTodo}
+					title={adminActual.ve_todo ? "Viendo todas las áreas" : "Viendo solo mi área"}
+				>
+					{#if adminActual.ve_todo}
+						<!-- Ojo abierto -->
+						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+							<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z" />
+							<circle cx="12" cy="12" r="3" />
+						</svg>
+						<span class="eye-label">TODAS LAS ÁREAS</span>
+					{:else}
+						<!-- Ojo tachado -->
+						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+							<path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a20.4 20.4 0 0 1 5.06-6.06M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 8 11 8a20.5 20.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+							<line x1="1" y1="1" x2="23" y2="23" />
+						</svg>
+						<span class="eye-label">MI ÁREA ({adminActual.area.toUpperCase()})</span>
+					{/if}
+				</button>
+			{/if}
+		</div>
 	</header>
 
 	<main class="main-content">
@@ -518,7 +584,7 @@
 									onclick={() => abrirDetalle(tarea)}
 									onkeydown={(e) => (e.key === 'Enter' || e.key === ' ') && abrirDetalle(tarea)}
 									class="task-card task-card-{col.key}"
-								>		
+								>       
 									<div class="card-header-actions">
 										<div>
 											<h3 class="task-title">{tarea.titulo}</h3>
@@ -708,9 +774,18 @@
 	}
 
 	.header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
 		margin-bottom: 2.5rem;
 		border-bottom: 2.5px solid #000000;
 		padding-bottom: 0.5rem;
+	}
+
+	.header-left {
+		display: flex;
+		align-items: center;
+		gap: 1.5rem;
 	}
 
 	.header-title {
@@ -721,6 +796,43 @@
 		text-transform: uppercase;
 		color: #000000;
 		margin: 0;
+	}
+
+	/* Estilos para el botón del ojo */
+	.btn-toggle-eye {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		background-color: #f1f5f9;
+		border: 1px solid #cbd5e1;
+		color: #64748b;
+		padding: 0.4rem 0.85rem;
+		border-radius: 9999px;
+		font-size: 0.75rem;
+		font-weight: 700;
+		cursor: pointer;
+		transition: all 0.2s ease;
+	}
+
+	.btn-toggle-eye:hover {
+		background-color: #e2e8f0;
+		color: #0f172a;
+	}
+
+	.btn-toggle-eye.active {
+		background-color: #f3eefc;
+		border-color: #7c3aed;
+		color: #7c3aed;
+	}
+
+	.btn-toggle-eye:disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
+	}
+
+	.eye-label {
+		font-family: monospace;
+		letter-spacing: 0.05em;
 	}
 
 	.kanban-grid {
@@ -1070,8 +1182,6 @@
 		font-style: italic;
 	}
 
-	/* Filas de propiedad estilo Notion (etiqueta a la izquierda, valor
-	   interactivo a la derecha), usadas por Estado y Asignados. */
 	.prop-row {
 		display: flex;
 		align-items: flex-start;
@@ -1098,7 +1208,6 @@
 		width: 100%;
 	}
 
-	/* Pill de Estado, coloreado dinámicamente según el estado actual */
 	.status-pill {
 		display: inline-flex;
 		align-items: center;
@@ -1128,8 +1237,6 @@
 		color: #81c784;
 	}
 
-	/* Menú flotante compartido por el pill de Estado y el picker de
-	   Asignados */
 	.popover-menu {
 		position: absolute;
 		top: calc(100% + 0.35rem);
@@ -1180,7 +1287,6 @@
 		font-size: 0.75rem;
 	}
 
-	/* Caja de asignados: chips removibles + botón para abrir el menú */
 	.asignados-trigger {
 		display: flex;
 		flex-wrap: wrap;
