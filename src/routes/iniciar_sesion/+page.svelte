@@ -1,4 +1,5 @@
 <script lang="ts">
+//Importacion de imagenes y recursos de svelte para postear
     import { enhance } from '$app/forms';
     import logoDO from '$lib/assets/logoDO.png';
 

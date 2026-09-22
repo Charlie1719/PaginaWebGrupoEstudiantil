@@ -211,15 +211,12 @@
 				categoria: nuevaTareaCategoria,  
 				comentarios: nuevaTareaComentarios.trim() || null,
 				asignado_a: nuevaTareaAsignados
-			}])
-			.select()
-			.single();
+			}]);
 
 		if (error) {
 			console.error('Error al crear la tarea:', error);
 			alert('No se pudo crear la tarea');
-		} else if (data) {
-			tareas = tareas.some(t => t.id === data.id) ? tareas : [...tareas, data];
+		} else {
 			mostrandoNuevaTarea = false;
 		}
 		guardandoNueva = false;
