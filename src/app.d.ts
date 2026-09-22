@@ -7,6 +7,7 @@ declare global {
       user: User | null
       isAdmin: boolean
       nombreAdmin: string | null
+      esSuperAdmin: boolean
     }
   }
 }

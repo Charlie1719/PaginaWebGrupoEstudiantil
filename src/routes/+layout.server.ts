@@ -15,6 +15,7 @@ export const load: LayoutServerLoad = async ({ locals }) => {
 	// correo en vez del nombre.
 	return {
 		user: locals.user,
-		nombreUsuario: locals.nombreAdmin
+		nombreUsuario: locals.nombreAdmin,
+		esSuperAdmin: locals.esSuperAdmin
 	}
 }

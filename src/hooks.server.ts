@@ -3,12 +3,10 @@ import { createServerClient } from '@supabase/ssr'
 import { redirect, type Handle } from '@sveltejs/kit'
 import { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY } from '$env/static/public'
 
-// Confirmado con el usuario: no existe /login en esta app.
-// La ruta real de inicio de sesión es /iniciar_sesion.
 const RUTA_LOGIN = '/iniciar_sesion'
 
 export const handle: Handle = async ({ event, resolve }) => {
-	// 1. Inicializar cliente de Supabase leyendo las cookies del servidor
+	// 1. Inicializar cliente de Supabase
 	event.locals.supabase = createServerClient(
 		PUBLIC_SUPABASE_URL,
 		PUBLIC_SUPABASE_ANON_KEY,
@@ -24,21 +22,18 @@ export const handle: Handle = async ({ event, resolve }) => {
 		}
 	)
 
-	// 2. Obtener el usuario autenticado de forma segura
+	// 2. Obtener el usuario autenticado
 	const { data: { user } } = await event.locals.supabase.auth.getUser()
 	event.locals.user = user
 	event.locals.isAdmin = false
 	event.locals.nombreAdmin = null
+	event.locals.esSuperAdmin = false
 
-	// 3. Una sola consulta por request: de aquí sale tanto isAdmin
-	//    (para proteger /por-hacer) como nombreAdmin (para mostrar el
-	//    nombre en el navbar en vez del correo crudo). Antes esto vivía
-	//    duplicado: una verificación a medias aquí y otra consulta a una
-	//    tabla distinta ("user") en +layout.server.ts.
+	// 3. Una sola consulta por request
 	if (user) {
 		const { data: admin, error: adminError } = await event.locals.supabase
 			.from('admins')
-			.select('email, user')
+			.select('email, user, es_superadmin') // <-- 1. CORREGIDO: agregamos es_superadmin aquí
 			.eq('email', user.email)
 			.maybeSingle()
 
@@ -48,18 +43,25 @@ export const handle: Handle = async ({ event, resolve }) => {
 
 		event.locals.isAdmin = !!admin
 		event.locals.nombreAdmin = admin?.user ?? null
+		event.locals.esSuperAdmin = admin?.es_superadmin ?? false
 	}
 
-	// 4. Proteger /por-hacer: hay que estar logueado Y ser admin.
-	//    (El "throw" es obligatorio, sin él redirect() no hace nada.)
-	if (event.url.pathname.startsWith('/por-hacer')) {
+	// 4. CORREGIDO: Proteger tanto /por-hacer como /miembros
+	const esPorHacer = event.url.pathname.startsWith('/por-hacer')
+	const esMiembros = event.url.pathname.startsWith('/miembros')
+
+	if (esPorHacer || esMiembros) {
+		// A. No ha iniciado sesión
 		if (!user) {
 			throw redirect(303, RUTA_LOGIN)
 		}
+		// B. Inició sesión pero no está en la tabla admins
 		if (!event.locals.isAdmin) {
-			// Tiene sesión válida pero no es admin: al inicio, no al login
-			// otra vez (ya inició sesión correctamente).
 			throw redirect(303, '/')
+		}
+		// C. Intenta entrar a /miembros pero NO es superadmin (ej. Omar, Yaya, Ricky)
+		if (esMiembros && !event.locals.esSuperAdmin) {
+			throw redirect(303, '/por-hacer')
 		}
 	}
 
