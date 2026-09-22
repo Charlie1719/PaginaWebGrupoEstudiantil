@@ -1,12 +1,11 @@
-<script lang="ts">
-	import qr from '$lib/assets/qr.jpg';
 
-	// TODO: reemplaza esto con el link real de invitación de tu
-	// comunidad de WhatsApp (el mismo que generó el QR). Así, quien
-	// entre desde el celular puede tocar la tarjeta en vez de escanear.
+<script lang="ts">
+	// Importamos y guardamos el enlace de whatsapp
+	import qr from '$lib/assets/qr.jpg';
 	const enlaceWhatsApp = 'https://chat.whatsapp.com/CdYv0uXS63zClFUHgB4njt?s=qt&p=a&mlu=4&ilr=4';
 </script>
 
+<!--Framework global-->
 <div class="page-container">
 	<div class="content-grid">
 		<!-- Columna izquierda: texto e instrucciones -->
@@ -74,7 +73,7 @@
 						<path d="M12 2C6.48 2 2 6.48 2 12c0 1.85.5 3.58 1.35 5.07L2 22l5.11-1.34A9.94 9.94 0 0 0 12 22c5.52 0 10-4.48 10-10S17.52 2 12 2Zm0 18a7.9 7.9 0 0 1-4.06-1.12l-.29-.17-3.03.79.81-2.96-.19-.3A7.93 7.93 0 1 1 12 20Z" />
 					</svg>
 					<div class="qr-info-texto">
-						<span class="qr-nombre">DroneOps Candids</span>
+						<span class="qr-nombre">DroneOps Candidatos</span>
 						<span class="qr-subtitulo">WhatsApp Community · Grupo oficial</span>
 					</div>
 				</div>
@@ -84,13 +83,14 @@
 </div>
 
 <style>
+	/*Diseño del framework global*/
 	.page-container {
 		min-height: 100vh;
 		background-color: #f8fafc;
 		padding: 3rem;
 		box-sizing: border-box;
 	}
-
+	/*Dividimos la estructura*/
 	.content-grid {
 		max-width: 80rem;
 		margin: 0 auto;
@@ -99,7 +99,7 @@
 		gap: 2.5rem;
 		align-items: start;
 	}
-
+	/*Vista celular: Estructura*/
 	@media (min-width: 900px) {
 		.content-grid {
 			grid-template-columns: 1.05fr 0.95fr;
@@ -107,7 +107,7 @@
 		}
 	}
 
-	/* Columna de texto */
+	/*Columna de texto */
 	.pill-badge {
 		display: inline-flex;
 		align-items: center;
@@ -123,14 +123,14 @@
 		border-radius: 9999px;
 		margin-bottom: 1.5rem;
 	}
-
+	/*Punto morado decorativo dentro de la etiqueta superior*/
 	.pill-badge .dot {
 		width: 0.4rem;
 		height: 0.4rem;
 		border-radius: 9999px;
 		background-color: #7c3aed;
 	}
-
+	/*Diseño del titulo*/
 	.titulo {
 		font-size: 2.75rem;
 		font-weight: 800;
@@ -139,7 +139,7 @@
 		margin: 0 0 1.25rem;
 		font-family: system-ui, -apple-system, sans-serif;
 	}
-
+	/*Diseño descripcion*/
 	.descripcion {
 		font-size: 1rem;
 		line-height: 1.6;
@@ -147,7 +147,7 @@
 		max-width: 42rem;
 		margin: 0 0 2rem;
 	}
-
+	/*Diseño de las instrucciones*/
 	.pasos {
 		list-style: none;
 		margin: 0 0 2rem;
@@ -156,13 +156,13 @@
 		flex-direction: column;
 		gap: 1.1rem;
 	}
-
+	/*Alineacion de cada elemento dentro de la lista de pasos */
 	.pasos li {
 		display: flex;
 		align-items: center;
 		gap: 1rem;
 	}
-
+	/*Diseño del circulo morado con el numero de cada paso*/
 	.paso-numero {
 		flex-shrink: 0;
 		width: 1.9rem;
@@ -176,12 +176,12 @@
 		align-items: center;
 		justify-content: center;
 	}
-
+	/*Texto descriptivo de los pasos*/
 	.paso-texto {
 		color: #1e293b;
 		font-size: 1rem;
 	}
-
+	/*Caja del mensaje de advertencia sobre las reglas del grupo */
 	.aviso-box {
 		display: flex;
 		align-items: flex-start;
@@ -192,13 +192,13 @@
 		padding: 1.1rem 1.3rem;
 		max-width: 42rem;
 	}
-
+	/*Ajuste de color y posicion del icono del aviso*/
 	.aviso-icono {
 		flex-shrink: 0;
 		color: #7c3aed;
 		margin-top: 0.15rem;
 	}
-
+	/*Estilo del texto dentro del aviso de advertencia*/
 	.aviso-box p {
 		margin: 0;
 		font-size: 0.9rem;
@@ -211,7 +211,7 @@
 		display: flex;
 		justify-content: center;
 	}
-
+	/*Diseño del qr*/
 	.qr-card {
 		display: block;
 		width: 100%;
@@ -224,12 +224,12 @@
 		box-sizing: border-box;
 		transition: transform 0.2s ease, box-shadow 0.2s ease;
 	}
-
+	/*Efecto para elevar ligeramente la tarjeta del QR al pasar el cursor*/
 	.qr-card:hover {
 		transform: translateY(-0.15rem);
 		box-shadow: 0 24px 50px -8px rgba(15, 23, 42, 0.2);
 	}
-
+	/*Marco punteado morado alrededor de la imagen del QR*/
 	.qr-frame {
 		display: flex;
 		flex-direction: column;
@@ -241,14 +241,14 @@
 		padding: 2rem 1.5rem;
 		margin-bottom: 1.5rem;
 	}
-
+	/*Tamaño de la imagen del codigo QR*/
 	.qr-frame img {
 		width: 100%;
 		max-width: 12rem;
 		height: auto;
 		display: block;
 	}
-
+	/*Estilo del texto que dice [ ESCANEA EL QR ]*/
 	.qr-caption {
 		font-family: monospace;
 		font-size: 0.75rem;
@@ -256,24 +256,24 @@
 		letter-spacing: 0.08em;
 		color: #7c3aed;
 	}
-
+	/*Contenedor que junta el icono verde de WhatsApp y los textos*/
 	.qr-info {
 		display: flex;
 		align-items: center;
 		gap: 0.75rem;
 	}
-
+	/*Agrupa los dos textos explicativos debajo del marco en formato de columna*/
 	.qr-info-texto {
 		display: flex;
 		flex-direction: column;
 	}
-
+	/*Nombre del grupo (DroneOps Candidatos)*/
 	.qr-nombre {
 		font-size: 1.05rem;
 		font-weight: 700;
 		color: #0f172a;
 	}
-
+	/*Subtitulo descriptivo debajo del nombre del grupo*/
 	.qr-subtitulo {
 		font-size: 0.8rem;
 		color: #64748b;

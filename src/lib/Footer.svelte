@@ -1,5 +1,7 @@
 <footer class="footer">
+    <!--Seccion superior: Informacion principal y enlaces de comunidad-->
     <div class="footer-top">
+        <!--Columna izquierda: Logo y descripcion de DroneOps-->
         <div class="footer-info">
             <div class="logo">
                 <img src="/logo.svg" alt="DRONE OPS" />
@@ -13,6 +15,7 @@
             </p>
         </div>
 
+        <!--Columna derecha: Enlaces a redes y plataformas-->
         <div class="footer-comunidad">
             <h3>COMUNIDAD</h3>
             <a href="https://github.com/DroneOps" target="_blank">
@@ -45,8 +48,10 @@
         </div>
     </div>
 
+    <!--Linea divisoria horizontal-->
     <div class="footer-divider"></div>
 
+    <!--Seccion inferior: Derechos de autor y afiliacion institucional-->
     <div class="footer-bottom">
         <p>© 2026 DroneOps. Todos los derechos reservados.</p>
         <p>Instituto Tecnológico y de Estudios Superiores de Monterrey, Campus Guadalajara · TEC</p>
@@ -54,6 +59,7 @@
 </footer>
 
 <style>
+    /*Estilos base del pie de pagina*/
     .footer {
         background-color: #0a0d14;
         color: #94a3b8;
@@ -61,27 +67,32 @@
         font-family: sans-serif;
     }
 
+    /*Distribuye el bloque de informacion y el de comunidad a los extremos*/
     .footer-top {
         display: flex;
         justify-content: space-between;
         align-items: flex-start;
     }
 
+    /*Ancho maximo para la columna del logo y texto*/
     .footer-info {
         max-width: 500px;
     }
 
+    /*Tamaño y margen del logo*/
     .logo img {
         height: 28px;
         margin-bottom: 1rem;
     }
 
+    /*Estilo del texto descriptivo del grupo*/
     .descripcion {
         font-size: 0.9rem;
         line-height: 1.5;
         margin-bottom: 0.75rem;
     }
 
+    /*Estilo del nombre de la asociacion*/
     .link-asociacion {
         color: #7c3aed;
         font-family: monospace;
@@ -89,6 +100,7 @@
         text-decoration: none;
     }
 
+    /*Titulo de la columna de enlaces*/
     .footer-comunidad h3 {
         color: #ffffff;
         font-size: 0.8rem;
@@ -96,6 +108,7 @@
         margin-bottom: 1rem;
     }
 
+    /*Organiza los enlaces de redes sociales en una lista vertical*/
     .footer-comunidad {
         display: flex;
         flex-direction: column;
@@ -103,6 +116,7 @@
         align-items: flex-start;
     }
 
+    /*Alineacion de los iconos SVG junto a los nombres de las redes*/
     .footer-comunidad a {
         display: flex;
         align-items: center;
@@ -113,36 +127,43 @@
         transition: color 0.2s ease;
     }
 
+    /*Cambia a blanco el color de los enlaces al pasar el cursor */
     .footer-comunidad a:hover {
         color: #ffffff;
     }
 
+    /*Linea gris tenue para separar el contenido superior de los derechos*/
     .footer-divider {
         border-top: 1px solid #1e2230;
         margin: 2.5rem 0 1.5rem;
     }
 
+    /* Alineacion horizontal del copyright y el texto del Tec */
     .footer-bottom {
         display: flex;
         justify-content: space-between;
         font-size: 0.8rem;
     }
 
-    /* ===== RESPONSIVE ===== */
+    /* RESPONSIVE para el celular */
     @media (max-width: 768px) {
+        /*Reduce el espacio interno general*/
         .footer {
             padding: 2.5rem 1.5rem 1.5rem;
         }
 
+        /*Cambia el diseño de 2 columnas a una lista vertical*/
         .footer-top {
             flex-direction: column;
             gap: 2rem;
         }
 
+        /*Permite que la informacion ocupe todo el ancho disponible*/
         .footer-info {
             max-width: 100%;
         }
 
+        /*Apila los textos del copyright uno debajo del otro*/
         .footer-bottom {
             flex-direction: column;
             gap: 0.5rem;
